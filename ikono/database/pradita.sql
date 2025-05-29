@@ -139,3 +139,34 @@ select t1.code, t1.date, t1.note, t2.line, t2.itemcode, t2.name, t2.quantity, t2
   from `order` t1, order_detail t2 where t1.code = t2.code;
 
 
+--unit
+-- Buat tabel unit_master jika belum ada
+CREATE TABLE IF NOT EXISTS `unit_master` (
+  `unit_code` VARCHAR(5) NOT NULL,
+  `unit_name` VARCHAR(20) NOT NULL,
+  `base_unit_category` VARCHAR(20) DEFAULT NULL, -- e.g., 'weight', 'volume', 'count'
+  PRIMARY KEY (`unit_code`),
+  UNIQUE KEY `unit_code_UNIQUE` (`unit_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tambahkan kolom unit_code ke tabel item jika belum ada
+ALTER TABLE `item`
+ADD COLUMN IF NOT EXISTS `unit_code` VARCHAR(5) DEFAULT NULL;
+
+-- Tambahkan foreign key constraint jika belum ada (opsional, tapi disarankan)
+-- Hati-hati jika sudah ada data lama yang tidak cocok
+ALTER TABLE `item`
+ADD CONSTRAINT IF NOT EXISTS `fk_item_unit`
+  FOREIGN KEY (`unit_code`)
+  REFERENCES `unit_master` (`unit_code`)
+  ON DELETE SET NULL
+  ON UPDATE CASCADE;
+
+-- Contoh data unit_master
+INSERT IGNORE INTO `unit_master` (`unit_code`, `unit_name`, `base_unit_category`) VALUES
+('GRM', 'gram', 'sembako'),
+('ML', 'mililiter', 'minuman'),
+('SACH', 'sachet', 'renceng'),
+('KG', 'kilogram', 'sembako'),
+('L', 'liter', 'minuman'),
+('PCS', 'pieces', 'lain-lain'); -- Tambahkan unit umum lainnya
